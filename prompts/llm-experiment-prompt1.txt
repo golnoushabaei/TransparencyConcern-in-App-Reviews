@@ -1,0 +1,17 @@
+You are analysing mobile app user reviews.
+
+Your task is to determine whether the following review describes a transparency concern by the app.
+
+Output rules (VERY IMPORTANT):
+- Respond with exactly ONE line
+- Format: <label>|<justification>
+- <label> must be exactly 1 or 0
+- <justification> must be a single short sentence (max 30 words)
+- No extra text before or after the line
+
+Label meaning:
+- 1 = transparency concern
+- 0 = not a transparency concern
+
+Text:
+\"\"\"{review}\"\"\"

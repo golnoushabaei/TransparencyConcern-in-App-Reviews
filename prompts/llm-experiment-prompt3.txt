@@ -1,0 +1,39 @@
+You are analysing mobile app user reviews.
+
+Your task is to determine whether the following review describes a transparency concern by the app.
+
+Below are examples of reviews and their labels. Note, 1 means a transparency concern and 0 is not a transparency concern.
+
+Review: “Account closed with no explanation and told it is final. Good thing there are much better options elsewhere. Use literally any other app and you'll be better off”
+Label: 1
+
+Review: “When open the app it said free but come to find out it's not free they are money hungry app yeah cost me $70 and they took it out of my account automatically without permission yeah that something that I didn't even need don't like it”
+Label: 1
+
+Review: “It's horrible with latest update.. I can't open my app since I don't have memory to update it! I don't want ur new update! Why insist? A new way of spying? I've been getting threats and harassment in the last 4-5 years! Accounts hacked, being g spied on.. What to expect from utube reltd to putn? What to expect from Apple, friends with Gogle as well?”
+Label: 1
+
+Review: “Poor selection of content. Misleading by using famous brand names.”
+Label: 0
+
+Review: “I can't see the stickers sets they appear as a transparent version of those please help me else the application is very good please help me please”
+Label: 0
+
+Review: “The music is already selected but does not play while I'm recording. It'll only play after I post a video which is very frustrating. App permission has already been granted but still does not work.”
+Label: 0
+
+Now, label the following review.
+
+Output rules (VERY IMPORTANT):
+- Respond with exactly ONE line
+- Format: <label>|<justification>
+- <label> must be exactly 1 or 0
+- <justification> must be a single short sentence (max 30 words)
+- No extra text before or after the line
+
+Label meaning:
+- 1 = transparency concern
+- 0 = not a transparency concern
+
+Text:
+\"\"\"{review}\"\"\"
