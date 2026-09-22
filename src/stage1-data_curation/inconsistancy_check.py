@@ -1,25 +1,3 @@
-"""Identify potentially inconsistent annotation pairs in app-review ground truth.
-
-This script is intentionally non-generative and deterministic.
-It only uses a pretrained sentence-transformer model (all-MiniLM-L6-v2) to generate embeddings and 
-then computes cosine similarity between reviews.
-
-Purpose:
-    - Load the review dataset.
-    - Preserve original row numbers.
-    - Generate embeddings for all review texts.
-    - Find pairs of reviews with high semantic similarity but different labels.
-    - Export the flagged pairs for human review.
-    - Report summary statistics.
-
-Required packages:
-    pip install pandas numpy sentence-transformers openpyxl
-
-Usage:
-    1. Edit the constants below: DATASET_PATH, REVIEW_TEXT_COLUMN, LABEL_COLUMN,
-       SIMILARITY_THRESHOLD, OUTPUT_CSV_PATH.
-    2. Run: python src/stage1-data_curation/inconsistancy_check.py
-"""
 
 from __future__ import annotations
 
@@ -44,7 +22,7 @@ LABEL_COLUMN = "Label"
 
 # Similarity threshold for identifying potentially inconsistent pairs.
 # Set to 0.90 for a stricter 90% similarity cutoff.
-SIMILARITY_THRESHOLD = 0.90
+SIMILARITY_THRESHOLD = 0.80
 
 # Keep all mismatched pairs above the threshold.
 # If you want a shortlist instead, set this to a small positive integer.
@@ -95,7 +73,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--threshold",
         type=float,
-        default=0.90,
+        default=0.80,
         help="Minimum cosine similarity threshold (for example 0.60 or 0.90).",
     )
     parser.add_argument(
