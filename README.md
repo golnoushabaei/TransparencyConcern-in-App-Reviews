@@ -13,7 +13,7 @@ The code accompanies the experiments described in the associated academic paper.
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Data](#data)
-- [Stage 1 – Data curation](#stage-1--data-curation)
+- [Stage 1 – Data filtering](#stage-1--data-filtering)
 - [Stage 2 – Transparency detection models](#stage-2--transparency-detection-models)
 - [Stage 3 – Topic clustering](#stage-3--topic-clustering)
 - [Reproducibility notes](#reproducibility-notes)
@@ -24,8 +24,8 @@ The code accompanies the experiments described in the associated academic paper.
 
 The pipeline consists of three main stages:
 
-1. **Stage 1 – Dataset curation**  
-   Filter raw app reviews by score/length, apply keyword filters, construct a ground-truth dataset, and remove labelling inconsistencies using an LLM.
+1. **Stage 1 – Data filtering**
+   Filter raw app reviews by score/length and apply two keyword-filtering sets. The final labelled dataset is provided under `data/ground_truth/`.
 
 2. **Stage 2 – Transparency detection**  
    Train and evaluate:
@@ -41,33 +41,31 @@ The pipeline consists of three main stages:
 ## Project Structure
 
 ```text
-TransparencyConcernDetection-in-AppReviews/
+TransparencyConcern-in-App-Reviews/
 ├── README.md
 ├── LICENSE
 ├── requirements.txt
 ├── config.example.py        # copy to config.py and edit for your environment
 │
 ├── data/
-│   ├── README.md            # explains how to obtain raw data
-│   ├── apps/                # app metadata (e.g. app names for stopwords)
-│   ├── keywords/            # keyword sets used to filter data
-│   ├── raw/                 # raw data (not committed)
-│   ├── intermediate/        # intermediate outputs (not committed)
-│   └── ground_truth/        # curated labelled datasets
+│   ├── apps/                # app names used as clustering stopwords
+│   ├── ground_truth/        # labelled data and annotations
+│   └── keywords/            # keyword sets used to filter data
 │
 ├── prompts/
 │   ├── llm-experiment-prompt1.txt      # LLM experiments (ground truth, prompt 1)
 │   ├── llm-experiment-prompt2.txt
 │   ├── llm-experiment-prompt3.txt
+│   ├── transparency-definition.txt
 │   └── bertopic-reduction-prompt.txt   # LLM-based topic reduction (Stage 3)
 │
 ├── src/
-│   ├── stage1_data_curation/
+│   ├── stage1-data_curation/
 │   │   ├── __init__.py
 │   │   ├── config_stage1.py
 │   │   ├── filter_by_score_length.py      # filter on rating & length
-│   │   ├── keyword_filtering_set1.py      # initial 195 keywords
-│   │   ├── keyword_filtering_set2.py      # refined 43 keywords
+│   │   ├── filter_keywords_set1.py        # keyword set 1
+│   │   └── filter_keywords_set2.py        # keyword set 2
 │   │
 │   ├── stage2_transparency_detection/
 │   │   ├── __init__.py
@@ -82,7 +80,7 @@ TransparencyConcernDetection-in-AppReviews/
 │   │   │   └── openai_backend.py
 │   │   ├── models/
 │   │   │   ├── __init__.py
-│   │   │   ├── deep_learning/
+│   │   │   ├── deep-learning/
 │   │   │   │   ├── __init__.py
 │   │   │   │   ├── bert.py
 │   │   │   │   ├── distilbert.py
@@ -91,14 +89,14 @@ TransparencyConcernDetection-in-AppReviews/
 │   │   │   ├── llms/
 │   │   │   │   ├── __init__.py
 │   │   │   │   └── llm_experiment.py      # unified LLM experiment script
-│   │   │   ├── machine_learning/
+│   │   │   ├── machine-learning/
 │   │   │   │   ├── __init__.py
-│   │   │   │   └── ml_experiments.py      # classical ML experiments
+│   │   │   │   └── ml-experiments.py      # classical ML experiments
 │   │
-│   ├── stage3_topic_clustering/
+│   ├── stage3-topic_clustering/
 │   │   ├── __init__.py
-│   │   ├── roberta_predictions.py         # apply RoBERTa fold 6 to full dataset
-│   │   └── topic_clustering.py            # BERTopic + LLM-based topic reduction
+│   │   ├── roberta-predictions.py         # apply RoBERTa checkpoint to full dataset
+│   │   └── clustering.py                  # BERTopic + LLM-based topic reduction
 │
 └── .gitignore
 ```
@@ -110,8 +108,8 @@ TransparencyConcernDetection-in-AppReviews/
 ### Clone the repository
 
 ```bash
-git clone https://github.com/your-org/TransparencyConcernDetection-in-AppReviews.git
-cd TransparencyConcernDetection-in-AppReviews
+git clone https://github.com/golnoushabaei/TransparencyConcern-in-App-Reviews.git
+cd TransparencyConcern-in-App-Reviews
 ```
 
 ### Create and activate a virtual environment
@@ -133,7 +131,7 @@ The ML code assumes `PyTorch`, `PyTorch Lightning`, `transformers`, `BERTopic`, 
 
 ## Configuration
 
-### Global config (Stage 2 & 3 LLM usage)
+### Global config (Stage 2 and Stage 3 LLM usage)
 
 Copy the example configuration:
 
@@ -163,7 +161,7 @@ For different experiments (prompts, outputs, backends), update:
 
 ### Stage 1 config
 
-`src/stage1_data_curation/config_stage1.py` controls Stage 1 paths:
+`src/stage1-data_curation/config_stage1.py` controls Stage 1 paths:
 
 ```python
 raw_data: Path = Path("data/raw/RawData.csv")
@@ -181,9 +179,7 @@ Adjust paths if your data lives elsewhere.
 
 ### Raw data
 
-The full raw dataset (~7M app reviews) is not included due to size.
-
-See `data/README.md` for instructions on how to obtain it and where to place it (typically `data/raw/RawData.csv`).
+The raw app-review dataset is not included in this repository. Place it at `data/raw/RawData.csv` before running Stage 1. The repository's `data/README.md` currently contains no acquisition instructions.
 
 Required columns:
 
@@ -195,20 +191,21 @@ Required columns:
 - `data/keywords/keywords_set1.csv` – initial 195 keywords (one per row).
 - `data/keywords/keywords_set2.csv` – refined 43 keywords (with a `Keyword` column).
 
-### Ground truth
+### Ground truth and supporting data
 
-- `data/ground_truth/ground-truth-before-inconsistency.csv` – manually labelled dataset (before LLM-based inconsistency removal).
-- `data/ground_truth/ground-truth-final.csv` – final ground-truth dataset used in Stage 2.
-- `data/ground_truth/Cleaned-Ground-Truth-DL.xlsx` – preprocessed version for DL/ML models (`clean_review`, `Label`).
+- `data/ground_truth/ground-truth-final.csv` – labelled dataset used by the LLM experiments and topic clustering.
+- `data/ground_truth/Cleaned-Ground-Truth-DL.xlsx` – cleaned dataset used by the deep-learning and machine-learning experiments.
+- Other annotation and topic-analysis spreadsheets in `data/ground_truth/` are supporting research materials.
+- `data/apps/Apps.xlsx` – app names used to build custom stopwords for topic clustering.
 
 ---
 
-## Stage 1 – Data curation
+## Stage 1 – Data filtering
 
 ### Step 1: Filter by score and length
 
 ```bash
-python -m src.stage1_data_curation.filter_by_score_length
+python -m src.stage1-data_curation.filter_by_score_length
 ```
 
 **Input:** `data/raw/RawData.csv`  
@@ -219,7 +216,7 @@ python -m src.stage1_data_curation.filter_by_score_length
 ### Step 2: Keyword filtering – set 1 (195 keywords)
 
 ```bash
-python -m src.stage1_data_curation.keyword_filtering_set1
+python -m src.stage1-data_curation.filter_keywords_set1
 ```
 
 Uses `data/keywords/keywords_set1.csv`.
@@ -232,7 +229,7 @@ Outputs:
 ### Step 3: Keyword filtering – set 2 (43 keywords)
 
 ```bash
-python -m src.stage1_data_curation.keyword_filtering_set2
+python -m src.stage1-data_curation.filter_keywords_set2
 ```
 
 Uses `data/keywords/keywords_set2.csv`.
@@ -241,26 +238,6 @@ Outputs:
 
 - `data/intermediate/FilteredData_keywords_set2.csv`
 - `results/stage1/Keyword_summary_set2.csv`
-
-### Step 4: LLM-based inconsistency check
-
-```bash
-python -m src.stage1_data_curation.inconsistency_llm
-```
-
-**Input:** `data/ground_truth/ground-truth-before-inconsistency.csv`
-
-Uses:
-
-- Embeddings (OpenAI) to find similar reviews
-- LLM (`run.backend` backend) with `prompts/inconsistency-check-prompt.txt`
-
-Outputs:
-
-- `results/stage1/grouped_inconsistencies_ground_truth.xlsx`  
-  (Clusters of similar but inconsistently labelled reviews.)
-- `data/ground_truth/ground-truth-after-inconsistency.csv`  
-  (Cleaned ground truth after removing inconsistencies.)
 
 ---
 
@@ -272,8 +249,8 @@ Outputs:
 python -m src.stage2_transparency_detection.cleaning_reviews_ground_truth
 ```
 
-**Input:** `data/ground_truth/ground-truth-after-inconsistency.csv`  
-**Output:** `data/ground_truth/Cleaned-Ground-Truth-DL.xlsx`
+**Input:** `data/ground_truth/ground-truth-final.csv`
+**Output:** `results/ground_truth/Cleaned-Ground-Truth-DL.xlsx`
 
 Columns:
 
@@ -290,7 +267,7 @@ This unified script:
 
 - Loads prompt from `prompts/<template_name>.txt`
 - Uses backend from `config.py` (`azure`, `bedrock`, `openai`)
-- Reads from `files.input_path` (default: `data/ground_truth/ground-truth-after-inconsistency.csv`)
+- Reads from `files.input_path` (default: `data/ground_truth/ground-truth-final.csv`)
 - Writes predictions to `files.output_path` (e.g. `results/llm_exp1_azure.csv`)
 - Computes accuracy, precision, recall, F1, ROC AUC if ground truth is present.
 
@@ -308,11 +285,13 @@ and performs K-fold cross-validation, saving best checkpoints via PyTorch Lightn
 Run from project root:
 
 ```bash
-python -m src.stage2_transparency_detection.models.deep_learning.bert
-python -m src.stage2_transparency_detection.models.deep_learning.distilbert
-python -m src.stage2_transparency_detection.models.deep_learning.roberta
-python -m src.stage2_transparency_detection.models.deep_learning.ensemble
+python -m src.stage2_transparency_detection.models.deep-learning.bert
+python -m src.stage2_transparency_detection.models.deep-learning.distilbert
+python -m src.stage2_transparency_detection.models.deep-learning.roberta
+python -m src.stage2_transparency_detection.models.deep-learning.ensemble
 ```
+
+The cleaning script writes its generated workbook under `results/`, while the model scripts read the committed workbook under `data/ground_truth/`. If you regenerate the workbook, copy it to the model input path or update the relevant paths in the scripts.
 
 **Inputs:** `clean_review`, `Label`
 
@@ -324,7 +303,7 @@ Outputs:
 ### 2.4 Machine learning models
 
 ```bash
-python -m src.stage2_transparency_detection.models.machine_learning.ml_experiments
+python -m src.stage2_transparency_detection.models.machine-learning.ml-experiments
 ```
 
 This script runs K-fold experiments for:
@@ -358,12 +337,12 @@ The script:
 ### 3.1 RoBERTa predictions on full dataset
 
 ```bash
-python -m src.stage3_topic_clustering.roberta_predictions
+python -m src.stage3-topic_clustering.roberta-predictions
 ```
 
 Inputs:
 
-- Fine-tuned RoBERTa checkpoint (fold 6): set `CKPT_PATH` in `roberta_predictions.py`
+- Fine-tuned RoBERTa checkpoint: set `CKPT_PATH` in `src/stage3-topic_clustering/roberta-predictions.py`
 - Ground truth: `data/ground_truth/Cleaned-Ground-Truth-DL.xlsx`
 - Cleaned full dataset parts: `data/intermediate/Final-Cleaned_Dataset_part*.csv`
 
@@ -383,7 +362,7 @@ Combines them into `results/stage3/final_predictions.csv` with columns:
 
 ### 3.2 Construct positive set for clustering
 
-Within `topic_clustering.py`, `load_positives()`:
+Within `clustering.py`, `load_positives()`:
 
 Takes:
 
@@ -395,7 +374,7 @@ Combines them into a single `positives_df` for topic modelling.
 ### 3.3 BERTopic clustering
 
 ```bash
-python -m src.stage3_topic_clustering.topic_clustering
+python -m src.stage3-topic_clustering.clustering
 ```
 
 This script:
@@ -463,8 +442,8 @@ Users should either:
 
 ### Large data files
 
-`data/raw/`, `data/intermediate/`, and `results/` are excluded from Git (except small samples).
+Raw/intermediate data and generated results are not included in the repository.
 
-Follow `data/README.md` and this README to reconstruct the pipeline from raw data to final outputs.
+Supply the raw and intermediate datasets required by the scripts at the paths listed above to run the complete pipeline.
 
 For any questions about running specific experiments or mapping code to paper tables/figures, see the paper’s supplementary material or open an issue in this repository.
