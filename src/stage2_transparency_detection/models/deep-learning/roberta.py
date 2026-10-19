@@ -122,7 +122,7 @@ class ReviewClassifier(pl.LightningModule):
 def main():
     kfold = KFold(n_splits=N_SPLITS, shuffle=True, random_state=SEED)
 
-    all_true, all_pred, all_prob = [], [], []
+    all_true, all_pred = [], []
 
     for fold, (train_idx, test_idx) in enumerate(kfold.split(x_data)):
         print(f"\n===== FOLD {fold + 1} =====")
@@ -178,12 +178,10 @@ def main():
         print("Accuracy:", metrics.accuracy_score(y_true, y_pred))
         print("Precision:", metrics.precision_score(y_true, y_pred))
         print("Recall:", metrics.recall_score(y_true, y_pred))
-        print("ROC AUC:", metrics.roc_auc_score(y_true, y_prob))
         print("Best model saved at:", checkpoint_callback.best_model_path)
 
         all_true.extend(y_true)
         all_pred.extend(y_pred)
-        all_prob.extend(y_prob)
 
         del model, dm, probs, labels
         gc.collect()
@@ -194,7 +192,6 @@ def main():
     print("Accuracy:", metrics.accuracy_score(all_true, all_pred))
     print("Precision:", metrics.precision_score(all_true, all_pred))
     print("Recall:", metrics.recall_score(all_true, all_pred))
-    print("ROC AUC:", metrics.roc_auc_score(all_true, all_prob))
 
 
 if __name__ == "__main__":

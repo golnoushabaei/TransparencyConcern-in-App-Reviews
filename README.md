@@ -269,7 +269,7 @@ This unified script:
 - Uses backend from `config.py` (`azure`, `bedrock`, `openai`)
 - Reads from `files.input_path` (default: `data/ground_truth/ground-truth-final.csv`)
 - Writes predictions to `files.output_path` (e.g. `results/llm_exp1_azure.csv`)
-- Computes accuracy, precision, recall, F1, ROC AUC if ground truth is present.
+- Computes accuracy, precision, recall, and F1 if ground truth is present.
 
 To reproduce different LLM experiments:
 
@@ -298,7 +298,7 @@ The cleaning script writes its generated workbook under `results/`, while the mo
 Outputs:
 
 - Fold-wise checkpoints (e.g. `bert_new_gt_fold_*.ckpt`, `roberta_new_gt_fold_*.ckpt`)
-- Metrics printed to stdout (precision, recall, F1, accuracy, ROC AUC)
+- Metrics printed to stdout (precision, recall, F1, accuracy)
 
 ### 2.4 Machine learning models
 
@@ -327,7 +327,7 @@ This script runs K-fold experiments for:
 The script:
 
 - Reads `data/ground_truth/Cleaned-Ground-Truth-DL.xlsx` (`clean_review`, `Label`)
-- Prints average precision, recall, F1, accuracy and ROC curves
+- Prints average precision, recall, F1, and accuracy
 - Saves best models as `Model-<name>.pkl` in the working directory.
 
 ---

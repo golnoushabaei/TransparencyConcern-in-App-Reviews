@@ -8,7 +8,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import confusion_matrix, roc_auc_score, roc_curve
+from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 from sklearn.ensemble import ExtraTreesClassifier, AdaBoostClassifier, GradientBoostingClassifier
 from sklearn.tree import DecisionTreeClassifier, ExtraTreeClassifier
@@ -86,18 +86,6 @@ def loading_model(filepath_savedmodel):
     with open(filepath_savedmodel, "rb") as file:
         clf = pickle.load(file)
     return clf
-
-
-def roc_plot(y_test, y_proba, modelname):
-    plt.figure()
-    print("Roc AUC:" + modelname, roc_auc_score(y_test, y_proba))
-    fpr, tpr, thresholds = roc_curve(y_test, y_proba)
-    plt.plot(fpr, tpr, label=modelname)
-    plt.xlabel("False positive rate")
-    plt.ylabel("True positive rate")
-    plt.title("ROC curve")
-    plt.legend(loc="best")
-    plt.show()
 
 
 def tfidf_char(x_train, x_test):
@@ -289,8 +277,6 @@ def run_kfold(
     print(f"Recall: {sum_recall / len(l_recall)}")
     print(f"F1-score: {sum_f1score / len(l_f1score)}")
     print(f"Accuracy: {sum_acc / len(l_acc)}")
-
-    roc_plot(l_ytest, l_y_proba, modelname)
 
     return {
         "y_test": np.array(l_ytest),

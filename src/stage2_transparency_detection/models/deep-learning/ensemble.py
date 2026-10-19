@@ -141,7 +141,7 @@ def get_probs(model, dataloader):
 def main():
     kfold = KFold(n_splits=N_SPLITS, shuffle=True, random_state=SEED)
 
-    all_true, all_pred_majority, all_pred_unanimous, all_prob = [], [], [], []
+    all_true, all_pred_majority, all_pred_unanimous = [], [], []
 
     for fold, (train_idx, test_idx) in enumerate(kfold.split(x_data)):
         print(f"\n===== FOLD {fold + 1} =====")
@@ -222,8 +222,6 @@ def main():
         roberta_prob = get_probs(roberta_model, dm_roberta.test_dataloader())
         distil_prob = get_probs(distil_model, dm_distil.test_dataloader())
 
-        ensemble_prob = (bert_prob + roberta_prob + distil_prob) / 3
-
         labels = []
         with torch.no_grad():
             for batch in dm_roberta.test_dataloader():
@@ -250,12 +248,9 @@ def main():
         print("Recall:", metrics.recall_score(y_true, final_unanimous))
         print("Accuracy:", metrics.accuracy_score(y_true, final_unanimous))
 
-        print("\nROC AUC:", metrics.roc_auc_score(y_true, ensemble_prob))
-
         all_true.extend(y_true)
         all_pred_majority.extend(final_majority)
         all_pred_unanimous.extend(final_unanimous)
-        all_prob.extend(ensemble_prob)
 
         del bert_model, roberta_model, distil_model, dm_bert, dm_roberta, dm_distil, labels
         gc.collect()
@@ -273,9 +268,6 @@ def main():
     print("Precision:", metrics.precision_score(all_true, all_pred_unanimous))
     print("Recall:", metrics.recall_score(all_true, all_pred_unanimous))
     print("Accuracy:", metrics.accuracy_score(all_true, all_pred_unanimous))
-
-    print("\nROC AUC:", metrics.roc_auc_score(all_true, all_prob))
-
 
 if __name__ == "__main__":
     main()

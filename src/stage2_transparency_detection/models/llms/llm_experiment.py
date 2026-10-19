@@ -6,7 +6,6 @@ from tqdm import tqdm
 from sklearn.metrics import (
     accuracy_score,
     precision_recall_fscore_support,
-    roc_auc_score,
 )
 
 from config import Config
@@ -103,19 +102,10 @@ def run_experiment(cfg: Config):
         precision, recall, f1, _ = precision_recall_fscore_support(
             y_true, y_pred, average="binary"
         )
-        try:
-            auc = roc_auc_score(y_true, y_pred)
-        except ValueError:
-            auc = None
-
         print("Accuracy:", acc)
         print("Precision:", precision)
         print("Recall:", recall)
         print("F1:", f1)
-        if auc is not None:
-            print("ROC AUC:", auc)
-        else:
-            print("ROC AUC: could not be computed (single-class predictions).")
     else:
         print("No ground truth provided, so accuracy/F1 cannot be computed.")
 
