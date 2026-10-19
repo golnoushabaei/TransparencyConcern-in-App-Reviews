@@ -59,7 +59,6 @@ TransparencyConcernDetection-in-AppReviews/
 │   ├── llm-experiment-prompt1.txt      # LLM experiments (ground truth, prompt 1)
 │   ├── llm-experiment-prompt2.txt
 │   ├── llm-experiment-prompt3.txt
-│   ├── inconsistency-check-prompt.txt  # LLM-based inconsistency check (Stage 1)
 │   └── bertopic-reduction-prompt.txt   # LLM-based topic reduction (Stage 3)
 │
 ├── src/
@@ -69,7 +68,6 @@ TransparencyConcernDetection-in-AppReviews/
 │   │   ├── filter_by_score_length.py      # filter on rating & length
 │   │   ├── keyword_filtering_set1.py      # initial 195 keywords
 │   │   ├── keyword_filtering_set2.py      # refined 43 keywords
-│   │   └── inconsistency_llm.py           # LLM-based inconsistency detection
 │   │
 │   ├── stage2_transparency_detection/
 │   │   ├── __init__.py
